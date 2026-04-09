@@ -16,7 +16,7 @@ The server mode uses the same model family through a lightweight Django API.
 
 - classify paper **title + abstract**
 - browser inference with ONNX
-- server-side API fallback
+- server-side API included
 - top-p = $95\%$ prediction display
 - top-$5$ history saved in browser local storage
 - sci-fi styled frontend
