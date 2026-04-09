@@ -1,3 +1,5 @@
+![logo](pictures/preview.jpg)
+
 # Intergalactic Paper Classifier
 
 A Django-based paper classifier for arXiv-style metadata.
