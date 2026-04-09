@@ -1,0 +1,251 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Intergalactic Paper Classifier</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'classifier/style.css' %}" />
+</head>
+<body>
+  <div id="cursor"></div>
+  <div id="cursor-trail"></div>
+
+  <div id="progress-bar"></div>
+
+  <canvas id="starfield"></canvas>
+  <div class="blueprint-overlay" id="blueprint"></div>
+
+  <main class="page">
+    <section id="hero">
+      <div class="hero-inner">
+        <div class="hero-copy reveal">
+          <div class="hero-eyebrow">SciBERT · INT8 ONNX · Browser + API Runtime</div>
+          <h1 class="hero-title">
+            <span>Intergalactic</span><br>
+            Paper Classifier
+          </h1>
+          <p class="hero-text">
+            Paste a paper title and abstract. Use the server API by default, or download the browser model and run predictions locally.
+          </p>
+
+          <div class="hero-chips">
+            <span class="chip">Server API</span>
+            <span class="chip">Browser inference</span>
+            <span class="chip">Top-p = 95%</span>
+          </div>
+        </div>
+
+        <div class="hero-panel reveal" style="transition-delay:0.12s">
+          <div class="terminal-window">
+            <div class="terminal-bar">
+              <div class="terminal-dot t-red"></div>
+              <div class="terminal-dot t-yellow"></div>
+              <div class="terminal-dot t-green"></div>
+              <span class="terminal-title">classifier@orbital-node:~$</span>
+            </div>
+
+            <div class="terminal-body">
+              <div class="t-line">
+                <span class="t-prompt">></span>
+                <span class="t-key">Current_Mode:</span>
+                <span id="runtime-mode-badge" class="t-val">Server API</span>
+              </div>
+              <div class="t-line">
+                <span class="t-prompt">></span>
+                <span class="t-key">Browser_Model:</span>
+                <span id="status-model" class="t-val">Not downloaded</span>
+              </div>
+              <div class="t-line">
+                <span class="t-prompt">></span>
+                <span class="t-key">Runtime:</span>
+                <span class="t-val">Transformers.js + Django API</span>
+              </div>
+              <div class="t-line">
+                <span class="t-prompt">></span>
+                <span class="t-key">Precision:</span>
+                <span class="t-val">INT8</span>
+              </div>
+              <div class="t-line">
+                <span class="t-prompt">></span>
+                <span class="t-key">Prediction_Mode:</span>
+                <span class="t-val">single-label multiclass</span>
+                <span class="cursor-blink"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="runtime">
+      <div class="workspace-inner">
+        <div class="section-header reveal">
+          <span class="section-tag">// Runtime</span>
+          <h2 class="section-title">Choose your <span>engine</span></h2>
+        </div>
+
+        <div class="runtime-grid">
+          <div class="loader-card runtime-card reveal">
+            <div class="loader-tag">// MODEL BOOT SEQUENCE</div>
+            <h2 class="loader-title">Browser model download</h2>
+            <p id="loader-phase" class="loader-phase">
+              Default mode is the server API. Download the browser model only if you want fully local inference.
+            </p>
+
+            <div class="runtime-meta">
+              <div class="runtime-meta-row">
+                <span>Current mode</span>
+                <strong id="runtime-mode">Server API</strong>
+              </div>
+              <div class="runtime-meta-row">
+                <span>Browser model size</span>
+                <strong>~100 MB</strong>
+              </div>
+              <div class="runtime-meta-row">
+                <span>Behavior after download</span>
+                <strong>Switch to local automatically</strong>
+              </div>
+            </div>
+
+            <div class="loader-progress-shell">
+              <div class="loader-progress-track">
+                <div id="loader-progress-fill" class="loader-progress-fill"></div>
+                <div class="loader-diagonal"></div>
+              </div>
+              <div id="loader-percent" class="loader-percent">0%</div>
+            </div>
+
+            <div class="loader-stats">
+              <span id="loader-loaded">0 MB</span>
+              <span class="loader-sep">/</span>
+              <span id="loader-total">0 MB</span>
+            </div>
+
+            <div id="loader-file" class="loader-file">No browser model request yet.</div>
+
+            <div class="panel-actions runtime-buttons">
+              <button id="load-model-btn" class="btn-primary" type="button">
+                Download browser model
+              </button>
+              <button id="use-api-btn" class="btn-secondary" type="button">
+                Use server API
+              </button>
+            </div>
+
+            <p id="runtime-note" class="inline-status">
+              Users with slow connection can skip the browser download and use the API directly.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="workspace">
+      <div class="workspace-inner">
+        <div class="section-header reveal">
+          <span class="section-tag">// INPUT</span>
+          <h2 class="section-title">Classify a <span>paper</span></h2>
+        </div>
+
+        <div class="workspace-grid">
+          <div class="panel panel-form reveal">
+            <div class="panel-head">
+              <div class="panel-tag">// Submission</div>
+              <div class="panel-title">Paper metadata</div>
+            </div>
+
+            <label for="title">Title</label>
+            <input id="title" type="text" placeholder="Attention Is All You Need" />
+
+            <label for="abstract">Abstract</label>
+            <textarea
+              id="abstract"
+              rows="12"
+              placeholder="We propose a new simple network architecture, the Transformer, based solely on attention mechanisms..."
+            ></textarea>
+
+            <div class="panel-actions">
+              <button id="predict-btn" class="btn-primary" type="button">
+                Predict subject
+              </button>
+              <button id="demo-btn" class="btn-secondary" type="button">
+                Fill demo example
+              </button>
+            </div>
+
+            <p id="status" class="inline-status">Ready. Current mode: Server API.</p>
+          </div>
+
+          <div class="panel panel-result reveal" style="transition-delay:0.10s">
+            <div class="panel-head">
+              <div class="panel-tag">// Output</div>
+              <div class="panel-title">Prediction result</div>
+            </div>
+
+            <div id="result-empty" class="empty-state">
+              Run the model to see the predicted arXiv subject and the top-p list that covers 95% probability mass.
+            </div>
+
+            <div id="result" class="result hidden">
+              <div class="top1-card">
+                <div class="top1-label">Top prediction</div>
+                <div id="top1" class="top1-value">—</div>
+              </div>
+
+              <div class="scores-card">
+                <div class="scores-title">Top-p mass (95%)</div>
+                <div id="top-p-scroll" class="top-p-scroll">
+                  <ol id="top-p-list" class="top-p-list"></ol>
+                </div>
+
+                <button id="top-p-more-btn" class="top-p-more-btn hidden" type="button" aria-label="Scroll down">
+                  ▼
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-history reveal" style="transition-delay:0.16s">
+          <div class="panel-head panel-head-row">
+            <div>
+              <div class="panel-tag">// History</div>
+              <div class="panel-title">Saved predictions</div>
+            </div>
+
+            <button id="clear-history-btn" class="btn-secondary btn-small" type="button">
+              Clear history
+            </button>
+          </div>
+
+          <div id="history-empty" class="empty-state">
+            No saved predictions yet.
+          </div>
+
+          <div id="history-wrap" class="history-wrap hidden">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Title</th>
+                  <th>Top-1</th>
+                  <th>Top-5</th>
+                </tr>
+              </thead>
+              <tbody id="history-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="{% static 'classifier/app.js' %}"></script>
+</body>
+</html>

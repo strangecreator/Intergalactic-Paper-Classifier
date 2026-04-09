@@ -1,0 +1,15 @@
+[project]
+name = "intergalactic-paper-classifier"
+version = "0.1.0"
+description = "Django app for arXiv subject classification with browser-side ONNX and server-side API."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "django>=5.0,<6.0",
+  "numpy>=1.26,<3.0",
+  "onnxruntime>=1.23.2,<1.24",
+  "transformers>=4.40,<5.0",
+]
+
+[tool.uv]
+package = false

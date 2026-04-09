@@ -1,0 +1,21 @@
+[Unit]
+Description=Intergalactic Paper Classifier
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/workspace/userspace/intergalactic-paper-classifier
+Environment=OMP_NUM_THREADS=1
+Environment=MKL_NUM_THREADS=1
+Environment=NUMEXPR_NUM_THREADS=1
+ExecStart=/root/.local/bin/uv run python manage.py runserver 0.0.0.0:38000 --noreload
+Restart=always
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
