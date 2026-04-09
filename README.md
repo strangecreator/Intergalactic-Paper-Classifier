@@ -2,7 +2,7 @@
 
 # Intergalactic Paper Classifier
 
-A Django-based paper classifier for arXiv-style metadata.
+A Django-based paper classifier for arXiv paper subject classification.
 
 The app supports two runtime modes:
 
